@@ -6,13 +6,13 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings.gigachat import GigaChatEmbeddings
 from langchain.prompts import PromptTemplate
 
-from typing import List
+from typing import List, Tuple
 from template import template
 
 TOKEN = os.getenv('GCTOKEN')
 
 
-def run_chain(documents: List, question: str) -> str:
+def run_chain(documents: List, question: str) -> Tuple[str, set]:
     model = GigaChat(credentials=TOKEN, verify_ssl_certs=False,
                      scope='GIGACHAT_API_CORP')
     embeddings = GigaChatEmbeddings(
