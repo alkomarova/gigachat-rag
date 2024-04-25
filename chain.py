@@ -8,7 +8,6 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationalRetrievalChain
 from arxive_api import ArxivRetriever
 from langchain.chains import LLMChain
-from typing import List, Tuple, Dict
 from langchain.memory import ConversationBufferMemory
 
 from template import main_template, retriever_template, out_of_counts_template
@@ -33,7 +32,7 @@ def run_chain_arxiv(question):
 
     result = qa.invoke(
         {"question": question, "chat_history": chat_history})
-    docs = retriever.get_relevant_documents(question)
+    # docs = retriever.get_relevant_documents(question)
     chat_history.append((question, result["answer"]))
     '''
     print(f"-> **Question**: {question} \n")
