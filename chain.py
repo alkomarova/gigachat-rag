@@ -2,9 +2,8 @@ import os
 
 from langchain.chains import RetrievalQA
 from langchain.chat_models.gigachat import GigaChat
-from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings.gigachat import GigaChatEmbeddings
 from langchain.prompts import PromptTemplate
+from langchain_community.vectorstores import FAISS
 
 from typing import List, Tuple
 from template import template
@@ -12,12 +11,9 @@ from template import template
 TOKEN = os.getenv('GCTOKEN')
 
 
-def run_chain(documents: List, question: str) -> Tuple[str, set]:
+def run_chain(db: FAISS, question: str) -> Tuple[str, set]:
     model = GigaChat(credentials=TOKEN, verify_ssl_certs=False,
                      scope='GIGACHAT_API_CORP')
-    embeddings = GigaChatEmbeddings(
-        credentials=TOKEN, verify_ssl_certs=False, scope='GIGACHAT_API_CORP')
-    db = FAISS.from_documents(documents, embeddings)
     prompt = PromptTemplate(
         input_variables=["context", "question"], template=template)
 
