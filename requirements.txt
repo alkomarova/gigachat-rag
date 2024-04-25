@@ -1,3 +1,4 @@
+arxiv
 pymupdf
 pymupdf4llm
 langchain
