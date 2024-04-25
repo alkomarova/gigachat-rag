@@ -66,7 +66,6 @@ class ArxivRetriever(BaseRetriever, ArxivAPIWrapper):
         docs = []
         for result in results:
             try:
-                print(result)
                 doc_file_name: str = result.download_pdf()
                 with fitz.open(doc_file_name) as doc_file:
                     text: str = "".join(page.get_text() for page in doc_file)
@@ -86,9 +85,12 @@ class ArxivRetriever(BaseRetriever, ArxivAPIWrapper):
             splitted = text_splitter.split_documents(doc)
             docs.extend(splitted)
 
-        embeddings = GigaChatEmbeddings(
-            credentials=TOKEN, verify_ssl_certs=False, scope='GIGACHAT_API_CORP')
-        db = FAISS.from_documents(docs, embeddings)
-        similar_chanks = db.similarity_search(query, k=5)
-        print('Подходящий контекст нашелся!')
-        return similar_chanks
+        if len(docs):
+            embeddings = GigaChatEmbeddings(
+                credentials=TOKEN, verify_ssl_certs=False, scope='GIGACHAT_API_CORP')
+            db = FAISS.from_documents(docs, embeddings)
+            similar_chanks = db.similarity_search(query, k=5)
+            # print('Подходящий контекст нашелся!')
+            return similar_chanks
+        else:
+            return []

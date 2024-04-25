@@ -57,8 +57,13 @@ def run_chain_arxiv():
         chat_history.append((question, result["answer"]))
         print(f"-> **Question**: {question} \n")
         print(f"**Answer**: {result['answer']} \n")
-        print("Использованные источники:")
-        for idx, doc in enumerate(docs):
-            print(f'{idx}. \"{doc.metadata["Title"]}\". {doc.metadata["Authors"]}. {
-                  doc.metadata["Journal"] or ""} {doc.metadata["Published"].year}. (URL : {doc.metadata["Link"]})')
+        if len(docs):
+            print("Использованные источники:")
+            names = set()
+            for idx, doc in enumerate(docs):
+                name = f'"{doc.metadata["Title"]}\". {doc.metadata["Authors"]}. {
+                    doc.metadata["Journal"] or ""} {doc.metadata["Published"].year}. (URL : {doc.metadata["Link"]})'
+                if name not in names:
+                    names.add(name)
+                    print(f'{idx}. {name}')
         question = input()
