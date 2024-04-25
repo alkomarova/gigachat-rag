@@ -5,6 +5,8 @@ from langchain.chat_models.gigachat import GigaChat
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings.gigachat import GigaChatEmbeddings
 from langchain.prompts import PromptTemplate
+from langchain.chains import ConversationalRetrievalChain
+from arxive_api import ArxivRetriever
 
 from typing import List, Tuple
 from template import template
@@ -31,3 +33,27 @@ def run_chain(documents: List, question: str) -> Tuple[str, set]:
                                      retriever=retriever)
     result = qa.invoke({"query": question})
     return result['result'], unique_sources
+
+
+def run_chain_arxiv():
+    retriever = ArxivRetriever(load_max_docs=20)
+    llm = GigaChat(credentials=TOKEN,
+                   model="GigaChat-Pro",
+                   verify_ssl_certs=False,
+                   scope='GIGACHAT_API_CORP')
+
+    assistant_system_message = """You are a helpful research assistant. \
+    Lookup relevant information as needed."""
+
+    qa = ConversationalRetrievalChain.from_llm(llm, retriever=retriever)
+    chat_history = []
+
+    print('Задайте свой вопрос!')
+    question = input()
+    while question != 'STOP':
+        result = qa({"question": question, "chat_history": chat_history})
+        chat_history.append((question, result["answer"]))
+        print(f"-> **Question**: {question} \n")
+        print(f"**Answer**: {result['answer']} \n")
+        print()
+        question = input()
