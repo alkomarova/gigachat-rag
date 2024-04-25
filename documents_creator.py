@@ -14,7 +14,7 @@ def get_documents(path: str) -> List:
     for filename in os.listdir(path):
         if filename.endswith('.txt'):
             file_path = os.path.join(path, filename)
-            loader = TextLoader(file_path)
+            loader = TextLoader(file_path, encoding="utf-8")
             document = loader.load()
             documents.extend(text_splitter.split_documents(document))
 

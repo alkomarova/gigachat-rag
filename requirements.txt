@@ -1,3 +1,6 @@
 pymupdf
+pymupdf4llm
 langchain
-git+https://github.com/pymupdf/RAG/ 
+gigachat
+gigachain
+faiss-cpu
