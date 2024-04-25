@@ -1,6 +1,6 @@
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain.text_splitter import MarkdownTextSplitter
-from pdf4llm.helpers import pymupdf_rag
+import pymupdf4llm
 import fitz
 import os
 
@@ -25,8 +25,8 @@ def pdf_to_md(path: str) -> None:
     for filename in os.listdir(path):
         if filename.endswith('.pdf'):
             file_path = os.path.join(path, filename)
-            doc = fitz.open(file_path.path)
-            md_text = pymupdf_rag.to_markdown(doc)
+            doc = fitz.open(file_path)
+            md_text = pymupdf4llm.to_markdown(doc)
             new_filename = filename.replace('.pdf', '') + '.md'
             with open(f"{parsed_path}{new_filename}", "w", encoding="utf-8") as f:
                 f.write(md_text)
