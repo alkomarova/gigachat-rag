@@ -20,6 +20,11 @@ llm = GigaChat(credentials=TOKEN,
                model="GigaChat-Pro",
                verify_ssl_certs=False,
                scope='GIGACHAT_API_CORP')
+prompt = PromptTemplate(
+        input_variables=["question"], template=main_template)
+memory = ConversationBufferMemory(memory_key="chat_history")
+chain = LLMChain(llm=llm, prompt=prompt, memory=memory)
+
 
 
 def run_chain(documents: List, question: str) -> Tuple[str, set]:
@@ -54,7 +59,7 @@ def run_chain_arxiv(question):
 
     result = qa.invoke(
         {"question": question, "chat_history": chat_history})
-    # docs = retriever.get_relevant_documents(question)
+    docs = retriever.get_relevant_documents(question)
     chat_history.append((question, result["answer"]))
     return result
     '''
@@ -71,27 +76,38 @@ def run_chain_arxiv(question):
                 print(f'{idx}. {name}')
     '''
 
+# функция которая должна давать ответ на запрос UI
+def get_chat_response(question):
+    global chain, memory, llm
+    result = chain.invoke(
+        {"question": question, "chat_history": memory})
+    print('Ответ на главный темплейт:', result)
+    # для перефразирования если слабый вопрос
+    counter = 0
+    while '[PEREPHRASE]' in result['text'] and counter < 2:
+        counter += 1
+        result['text'] = result['text'].replace("[PEREPHRASE]", "")
+        result['text'] = result['text'].replace("PEREPHRASE", "")
+        result = run_chain_arxiv(result['text'])
+        print('Что выдал архив:', result)
+        add_prompt = PromptTemplate(
+            input_variables=["question"], template=retriever_template)
+        chain_additional = LLMChain(llm=llm, prompt=add_prompt,
+                            memory=memory)
+        result = chain_additional.invoke(
+            {"question": result["answer"], "chat_history": memory})
+        print('После того, как посмотрели на ответ архива:', result)
+    if "answer" not in result:
+        result["answer"] = result["text"]
+    counter = 0
+    return result["answer"]
 
-def main_chats(question):
-    prompt = PromptTemplate(
-        input_variables=["question"], template=main_template)
-    memory = ConversationBufferMemory(memory_key="chat_history")
-    chain = LLMChain(llm=llm, prompt=prompt, memory=memory)
+# запустить CLI
+def main_chats():
+    question = ""
     while question != 'STOP':
-        result = chain.invoke(
-            {"question": question, "chat_history": memory})
-        print('Ответ на главный темплейт:', result)
-        counter = 0
-        while '[PEREPHRASE]' in result['text'] and counter < 2:
-            counter += 1
-            result = run_chain_arxiv(result['text'][12:])
-            print('Что выдал архив:', result)
-            add_prompt = PromptTemplate(
-                input_variables=["question"], template=retriever_template)
-            chain = LLMChain(llm=llm, prompt=add_prompt,
-                             memory=memory)
-            result = chain.invoke(
-                {"question": result, "chat_history": memory})
-            print('После того, как посмотрели на ответ архива:', result)
-        counter = 0
         question = input()
+        print(get_chat_response(question))
+
+# пример использования функции
+# print(get_chat_response("как дела?"))

@@ -5,8 +5,7 @@ from pdf_parser import pdf_to_txt
 
 def main():
     print('Задайте свой вопрос.')
-    question = input()
-    main_chats(question)
+    main_chats()
 
 
 '''
