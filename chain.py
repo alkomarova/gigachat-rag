@@ -77,3 +77,10 @@ def get_chat_response(question):
         result = chain_max_counter.invoke(
             {"question": result['text'], "chat_history": memory})
     return result["text"]
+
+
+def main_chats():
+    question = ""
+    while question != 'STOP':
+        question = input()
+        print(get_chat_response(question))
