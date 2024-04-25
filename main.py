@@ -1,10 +1,12 @@
-from chain import run_chain, run_chain_arxiv
+from chain import run_chain, run_chain_arxiv, main_chats
 from documents_creator import get_documents
 from pdf_parser import pdf_to_txt
 
 
 def main():
-    run_chain_arxiv()
+    print('Задайте свой вопрос.')
+    question = input()
+    main_chats(question)
 
 
 '''
