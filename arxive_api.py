@@ -20,7 +20,6 @@ from langchain.chat_models.gigachat import GigaChat
 TOKEN = os.getenv('GCTOKEN')
 
 
-
 class ArxivRetriever(BaseRetriever, ArxivAPIWrapper):
     """`Arxiv` retriever.
 
@@ -57,39 +56,3 @@ class ArxivRetriever(BaseRetriever, ArxivAPIWrapper):
             for result in results
         ]
         return docs
-
-
-description = (
-    "A wrapper around Arxiv.org "
-    "Useful for when you need to answer questions about Physics, Mathematics, "
-    "Computer Science, Quantitative Biology, Quantitative Finance, Statistics, "
-    "Electrical Engineering, and Economics "
-    "from scientific articles on arxiv.org. "
-    "Input should be a search query."
-)
-
-# Create the tool
-retriever = ArxivRetriever(load_max_docs=20)
-llm = GigaChat(credentials=TOKEN, 
-               model="GigaChat-Pro",
-               verify_ssl_certs=False,
-                    scope='GIGACHAT_API_CORP')
-                    
-assistant_system_message = """You are a helpful research assistant. \
-Lookup relevant information as needed."""
-
-qa = ConversationalRetrievalChain.from_llm(llm, retriever=retriever)
-questions = [
-    "What are Heat-bath random walks with Markov base?",
-    "What is the ImageBind model?",
-    "How does Compositional Reasoning with Large Language Models works?",
-    "Сколько слоев в ImageNet?",
-    "Что такое LSTM?"
-]
-chat_history = []
-
-for question in questions:
-    result = qa({"question": question, "chat_history": chat_history})
-    chat_history.append((question, result["answer"]))
-    print(f"-> **Question**: {question} \n")
-    print(f"**Answer**: {result['answer']} \n")
