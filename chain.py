@@ -15,6 +15,9 @@ TOKEN = os.getenv('GCTOKEN')
 
 
 def run_chain(documents: List, question: str) -> Tuple[str, set]:
+    '''
+    Старая версия с локальным сохранением данных
+    '''
     model = GigaChat(credentials=TOKEN, verify_ssl_certs=False,
                      scope='GIGACHAT_API_CORP')
     embeddings = GigaChatEmbeddings(
@@ -36,14 +39,11 @@ def run_chain(documents: List, question: str) -> Tuple[str, set]:
 
 
 def run_chain_arxiv():
-    retriever = ArxivRetriever(load_max_docs=20)
+    retriever = ArxivRetriever(load_max_docs=3)
     llm = GigaChat(credentials=TOKEN,
                    model="GigaChat-Pro",
                    verify_ssl_certs=False,
                    scope='GIGACHAT_API_CORP')
-
-    assistant_system_message = """You are a helpful research assistant. \
-    Lookup relevant information as needed."""
 
     qa = ConversationalRetrievalChain.from_llm(llm, retriever=retriever)
     chat_history = []
@@ -51,12 +51,19 @@ def run_chain_arxiv():
     print('Задайте свой вопрос!')
     question = input()
     while question != 'STOP':
-        result = qa({"question": question, "chat_history": chat_history})
+        result = qa.invoke(
+            {"question": question, "chat_history": chat_history})
         docs = retriever.get_relevant_documents(question)
         chat_history.append((question, result["answer"]))
         print(f"-> **Question**: {question} \n")
         print(f"**Answer**: {result['answer']} \n")
-        print("Использованные источники:")
-        for idx, doc in enumerate(docs):
-            print(f'{idx}. \"{doc.metadata["Title"]}\". {doc.metadata["Authors"]}. {doc.metadata["Journal"] or ""} {doc.metadata["Published"].year}. (URL : {doc.metadata["Link"]})')
+        if len(docs):
+            print("Использованные источники:")
+            names = set()
+            for idx, doc in enumerate(docs):
+                name = f'"{doc.metadata["Title"]}\". {doc.metadata["Authors"]}. {
+                    doc.metadata["Journal"] or ""} {doc.metadata["Published"].year}. (URL : {doc.metadata["Link"]})'
+                if name not in names:
+                    names.add(name)
+                    print(f'{idx}. {name}')
         question = input()

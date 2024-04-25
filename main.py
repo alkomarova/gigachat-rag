@@ -5,7 +5,11 @@ from pdf_parser import pdf_to_txt
 
 def main():
     run_chain_arxiv()
-    '''
+
+
+'''
+run previour version: 
+
     pdf_to_txt('data/')
     documents = get_documents('parsed_data/')
     print('Задайте свой вопрос.')
