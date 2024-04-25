@@ -24,8 +24,8 @@ from langchain.chat_models.gigachat import GigaChat
 TOKEN = os.getenv('GCTOKEN')
 
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,
-    chunk_overlap=200,
+    chunk_size=500,
+    chunk_overlap=150,
 )
 
 
@@ -90,7 +90,6 @@ class ArxivRetriever(BaseRetriever, ArxivAPIWrapper):
                 credentials=TOKEN, verify_ssl_certs=False, scope='GIGACHAT_API_CORP')
             db = FAISS.from_documents(docs, embeddings)
             similar_chanks = db.similarity_search(query, k=5)
-            # print('Подходящий контекст нашелся!')
             return similar_chanks
         else:
             return []
