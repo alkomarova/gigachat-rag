@@ -1,9 +1,4 @@
-from chain_web import run_chain, run_chain_arxiv
-from documents_creator import get_documents
-from pdf_parser import pdf_to_txt
-
-
-import random
+from chain import get_chat_response
 from flask import Flask, request
 from flask_cors import CORS
 
@@ -17,7 +12,7 @@ def get_random_number():
     
     # Проверяем, есть ли в данных поле 'message'
     if 'message' in data:
-        return run_chain_arxiv(data['message'])
+        return get_chat_response(data['message'])
     else:
         # Если поле 'message' отсутствует, возвращаем ошибку
         return 'Ошибка: поле "message" отсутствует в запросе', 400
