@@ -38,7 +38,7 @@ def run_chain(documents: List, question: str) -> Tuple[str, set]:
     return result['result'], unique_sources
 
 
-def run_chain_arxiv():
+def run_chain_arxiv(question):
     retriever = ArxivRetriever(load_max_docs=3)
     llm = GigaChat(credentials=TOKEN,
                    model="GigaChat-Pro",
@@ -48,21 +48,22 @@ def run_chain_arxiv():
     qa = ConversationalRetrievalChain.from_llm(llm, retriever=retriever)
     chat_history = []
 
-    print('Задайте свой вопрос!')
-    question = input()
-    while question != 'STOP':
-        result = qa.invoke(
-            {"question": question, "chat_history": chat_history})
-        docs = retriever.get_relevant_documents(question)
-        chat_history.append((question, result["answer"]))
-        print(f"-> **Question**: {question} \n")
-        print(f"**Answer**: {result['answer']} \n")
-        if len(docs):
-            print("Использованные источники:")
-            names = set()
-            for idx, doc in enumerate(docs):
-                name = f'"{doc.metadata["Title"]}\". {doc.metadata["Authors"]}. {doc.metadata["Journal"] or ""} {doc.metadata["Published"].year}. (URL : {doc.metadata["Link"]})'
-                if name not in names:
-                    names.add(name)
-                    print(f'{idx}. {name}')
-        question = input()
+    # print('Задайте свой вопрос!')
+    # question = input()
+    # while question != 'STOP':
+    result = qa.invoke(
+        {"question": question, "chat_history": chat_history})
+    # docs = retriever.get_relevant_documents(question)
+    chat_history.append((question, result["answer"]))
+    # print(f"-> **Question**: {question} \n")
+    # print(f"**Answer**: {result['answer']} \n")
+    return result['answer']
+        # if len(docs):
+        #     print("Использованные источники:")
+        #     names = set()
+        #     for idx, doc in enumerate(docs):
+        #         name = f'"{doc.metadata["Title"]}\". {doc.metadata["Authors"]}. {doc.metadata["Journal"] or ""} {doc.metadata["Published"].year}. (URL : {doc.metadata["Link"]})'
+        #         if name not in names:
+        #             names.add(name)
+        #             print(f'{idx}. {name}')
+        # question = input()

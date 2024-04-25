@@ -5,3 +5,5 @@ langchain
 gigachat
 gigachain
 faiss-cpu
+flask_cors
+flask
