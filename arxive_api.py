@@ -51,6 +51,8 @@ class ArxivRetriever(BaseRetriever, ArxivAPIWrapper):
                     "Published": result.updated.date(),
                     "Title": result.title,
                     "Authors": ", ".join(a.name for a in result.authors),
+                    "Journal": result.journal_ref,
+                    "Link": result.pdf_url
                 },
             )
             for result in results

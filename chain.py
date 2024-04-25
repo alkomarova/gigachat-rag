@@ -52,8 +52,11 @@ def run_chain_arxiv():
     question = input()
     while question != 'STOP':
         result = qa({"question": question, "chat_history": chat_history})
+        docs = retriever.get_relevant_documents(question)
         chat_history.append((question, result["answer"]))
         print(f"-> **Question**: {question} \n")
         print(f"**Answer**: {result['answer']} \n")
-        print()
+        print("Использованные источники:")
+        for idx, doc in enumerate(docs):
+            print(f'{idx}. \"{doc.metadata["Title"]}\". {doc.metadata["Authors"]}. {doc.metadata["Journal"] or ""} {doc.metadata["Published"].year}. (URL : {doc.metadata["Link"]})')
         question = input()
