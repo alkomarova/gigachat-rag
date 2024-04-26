@@ -51,8 +51,7 @@ class ArxivRetriever(BaseRetriever, ArxivAPIWrapper):
         docs = []
         for result in results:
             try:
-                doc_file_name: str = result.download_pdf(
-                    f'{parsed_path}{result.title}.pdf')
+                doc_file_name: str = result.download_pdf(parsed_path)
                 with fitz.open(doc_file_name) as doc_file:
                     text: str = "".join(page.get_text() for page in doc_file)
             except (FileNotFoundError, fitz.fitz.FileDataError) as f_ex:
