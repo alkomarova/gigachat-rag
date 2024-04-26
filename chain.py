@@ -25,7 +25,7 @@ memory = ConversationBufferMemory(memory_key="chat_history")
 chain = LLMChain(llm=llm, prompt=prompt, memory=memory)
 
 
-def run_chain_arxiv(question):
+def run_chain_arxiv(question, return_list_of_sources=False):
     retriever = ArxivRetriever(load_max_docs=3)
     qa = ConversationalRetrievalChain.from_llm(
         llm, retriever=retriever, rephrase_question=False)
@@ -36,17 +36,16 @@ def run_chain_arxiv(question):
     docs = retriever.get_relevant_documents(question)
     chat_history.append((question, result["answer"]))
     
-    # list_of_sources = None
-    # if len(docs):
-    #     list_of_sources = "Список источников, по которым шел поиск: \n"
-    #     names = set()
-    #     for idx, doc in enumerate(docs):
-    #         name = f'"{doc.metadata["Title"]}\". {doc.metadata["Authors"]}. {
-    #             doc.metadata["Journal"] or ""} {doc.metadata["Published"].year}. (URL : {doc.metadata["Link"]})'
-    #         if name not in names:
-    #             names.add(name)
-    #             list_of_sources.append(f'{idx}. {name}')
+    list_of_sources = []
+    if len(docs):
+        for idx, doc in enumerate(docs):
+            name = f""" "{doc.metadata["Title"]}\". {doc.metadata["Authors"]}. {
+                doc.metadata["Journal"] or ""} {doc.metadata["Published"].year}. (URL : {doc.metadata["Link"]}) """
+            list_of_sources.append(name)
+    list_of_sources = set(list_of_sources)
     
+    if (return_list_of_sources):
+        return result, list_of_sources
     return result
 
 def _check_need_arxive(result):
@@ -87,6 +86,7 @@ def get_chat_response(question):
         {"question": question, "chat_history": memory})
     print('Ответ на главный темплейт:', result)
     final_answer = None
+    answer_sources = []
 
     is_need_arxive = _check_need_arxive(result)
 
@@ -98,7 +98,8 @@ def get_chat_response(question):
         question_arxiv = question
         while counter < max_counter:
             counter += 1
-            result = run_chain_arxiv(question_arxiv)
+            result, sources = run_chain_arxiv(question_arxiv, return_list_of_sources=True)
+            answer_sources.extend(sources)
             arxive_result = result["answer"]
             print('Что выдал архив:', result)
             answer_review = _check_arxive_helps(question, arxive_result)
@@ -111,7 +112,8 @@ def get_chat_response(question):
             final_answer = _arxive_no_found(question)
     else:
         final_answer = result["text"]
-    return final_answer
+    answer_sources = "\n - ".join(list(set(answer_sources)))
+    return final_answer + answer_sources
 
 
 def main_chats():
