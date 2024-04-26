@@ -35,7 +35,7 @@ def run_chain_arxiv(question, return_list_of_sources=False):
         {"question": question, "chat_history": chat_history})
     docs = retriever.get_relevant_documents(question)
     chat_history.append((question, result["answer"]))
-    
+
     list_of_sources = []
     if len(docs):
         for idx, doc in enumerate(docs):
@@ -43,35 +43,41 @@ def run_chain_arxiv(question, return_list_of_sources=False):
                 doc.metadata["Journal"] or ""} {doc.metadata["Published"].year}. (URL : {doc.metadata["Link"]}) """
             list_of_sources.append(name)
     list_of_sources = set(list_of_sources)
-    
+
     if (return_list_of_sources):
         return result, list_of_sources
     return result
 
+
 def _check_need_arxive(result):
     add_prompt = PromptTemplate(
-            input_variables=["gigachat_answer"], template=template_need_arxive)
+        input_variables=["gigachat_answer"], template=template_need_arxive)
     chain_additional = LLMChain(llm=llm, prompt=add_prompt)
-    res = chain_additional.invoke({"gigachat_answer":result["text"]})
+    res = chain_additional.invoke({"gigachat_answer": result["text"]})
     print("_check_need_arxive: ", res)
     return res["text"]
 
+
 def _rewrite_query_arxive(question, review_marks):
     add_prompt = PromptTemplate(
-            input_variables=["question", "review_marks"], template=arxive_rewrite_tempalte)
+        input_variables=["question", "review_marks"], template=arxive_rewrite_tempalte)
     chain_additional = LLMChain(llm=llm, prompt=add_prompt)
-    result = chain_additional.invoke({"question": question, "review_marks": review_marks})
+    result = chain_additional.invoke(
+        {"question": question, "review_marks": review_marks})
     print("_rewrite_query_arxive: ", result)
     return result["text"]
+
 
 def _check_arxive_helps(question, arxive_answer):
     add_prompt = PromptTemplate(
         input_variables=["question", "arxiv_answer"], template=arxive_evaluate_template)
     chain_additional = LLMChain(llm=llm, prompt=add_prompt)
-    result = chain_additional.invoke({"question": question, "arxiv_answer": arxive_answer})
+    result = chain_additional.invoke(
+        {"question": question, "arxiv_answer": arxive_answer})
     print("_check_arxive_helps: ", result)
     return result["text"]
-    
+
+
 def _arxive_no_found(question):
     add_prompt = PromptTemplate(
         input_variables=["question"], template=out_of_counts_template)
@@ -79,6 +85,7 @@ def _arxive_no_found(question):
     result = chain_additional.invoke({"question": question})
     print("_arxive_no_found_: ", result)
     return result["text"]
+
 
 def get_chat_response(question):
     global chain, memory, llm
@@ -98,12 +105,13 @@ def get_chat_response(question):
         question_arxiv = question
         while counter < max_counter:
             counter += 1
-            result, sources = run_chain_arxiv(question_arxiv, return_list_of_sources=True)
+            result, sources = run_chain_arxiv(
+                question_arxiv, return_list_of_sources=True)
             answer_sources.extend(sources)
             arxive_result = result["answer"]
             print('Что выдал архив:', result)
             answer_review = _check_arxive_helps(question, arxive_result)
-            if (answer_review.find("NO")!=-1):
+            if (answer_review.find("NO") != -1):
                 question_arxiv = _rewrite_query_arxive(question, answer_review)
             else:
                 final_answer = arxive_result
